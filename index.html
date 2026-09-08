@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Инабат, кешірші... ❤️</title>
+
+    <style>
+        /* Standalone Vanilla CSS - Works 100% offline without CDN */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #110309;
+            background: linear-gradient(135deg, #18030c 0%, #2e0819 50%, #15020a 100%);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* Background Canvas for Particles */
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Ambient Glow Effect */
+        .ambient-glow {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 280px;
+            height: 280px;
+            background: rgba(225, 29, 72, 0.25);
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* Main Romantic Card */
+        .card {
+            position: relative;
+            z-index: 10;
+            width: 88%;
+            max-width: 340px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 182, 193, 0.22);
+            border-radius: 30px;
+            padding: 36px 24px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(225, 29, 72, 0.25);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Pulsing Heart Element */
+        .heart-wrapper {
+            position: relative;
+            margin-bottom: 24px;
+            cursor: pointer;
+        }
+
+        .heart-glow {
+            position: absolute;
+            inset: -12px;
+            background: rgba(244, 63, 94, 0.45);
+            border-radius: 50%;
+            filter: blur(16px);
+            animation: pulseGlow 2s infinite ease-in-out;
+        }
+
+        .heart-circle {
+            position: relative;
+            width: 96px;
+            height: 96px;
+            background: linear-gradient(135deg, #ff3b70, #c80d3e);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 25px rgba(225, 29, 72, 0.5);
+            animation: heartBeat 1.3s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+            font-size: 46px;
+        }
+
+        @keyframes heartBeat {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.12); }
+            40% { transform: scale(1); }
+            60% { transform: scale(1.08); }
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.4; transform: scale(0.95); }
+            50% { opacity: 0.85; transform: scale(1.15); }
+        }
+
+        /* Title Style */
+        .title {
+            font-size: 26px;
+            font-weight: 800;
+            margin-bottom: 32px;
+            color: #ffffff;
+            background: linear-gradient(135deg, #ffffff 30%, #fecdd3 70%, #fda4af 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.35;
+            letter-spacing: -0.3px;
+        }
+
+        /* Buttons Container */
+        .btn-area {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            position: relative;
+            min-height: 110px;
+            align-items: center;
+        }
+
+        /* Yes Button */
+        .btn-yes {
+            width: 100%;
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #ffffff;
+            border: none;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 22px rgba(16, 185, 129, 0.38);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 20;
+            outline: none;
+        }
+
+        .btn-yes:active {
+            transform: scale(0.95) !important;
+        }
+
+        /* Runaway No Button */
+        .btn-no {
+            width: 100%;
+            padding: 14px 20px;
+            background: rgba(255, 255, 255, 0.12);
+            color: #fecdd3;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            z-index: 30;
+            transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+            white-space: nowrap;
+            outline: none;
+            touch-action: none;
+        }
+
+        /* Modal Overlay - Strictly hidden by default! */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.88);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            z-index: 100;
+            display: none; /* Strictly hidden */
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex !important;
+            opacity: 1;
+        }
+
+        .modal-card {
+            width: 88%;
+            max-width: 310px;
+            background: rgba(30, 8, 19, 0.95);
+            border: 1px solid rgba(244, 63, 94, 0.45);
+            border-radius: 28px;
+            padding: 32px 22px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8), 0 0 40px rgba(244, 63, 94, 0.35);
+            transform: scale(0.85);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: scale(1);
+        }
+
+        .modal-heart-icon {
+            width: 76px;
+            height: 76px;
+            background: linear-gradient(135deg, #f43f5e, #be123c);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px auto;
+            font-size: 38px;
+            box-shadow: 0 8px 22px rgba(244, 63, 94, 0.5);
+            animation: heartBeat 1.3s infinite ease-in-out;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 12px;
+            letter-spacing: -0.3px;
+        }
+
+        .modal-desc {
+            font-size: 15px;
+            color: #fecdd3;
+            line-height: 1.5;
+            margin-bottom: 26px;
+        }
+
+        .modal-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #f43f5e, #e11d48);
+            color: #ffffff;
+            border: none;
+            border-radius: 18px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(244, 63, 94, 0.4);
+        }
+
+        .modal-btn:active {
+            transform: scale(0.96);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background Particles Canvas -->
+    <canvas id="bgCanvas"></canvas>
+    
+    <!-- Ambient Glow -->
+    <div class="ambient-glow"></div>
+
+    <!-- Main Card View -->
+    <main class="card">
+        <!-- Interactive Pulsing Heart -->
+        <div class="heart-wrapper" id="heroHeart">
+            <div class="heart-glow"></div>
+            <div class="heart-circle">❤️</div>
+        </div>
+
+        <!-- Title -->
+        <h1 class="title">Инабат, кешірші... ❤️</h1>
+
+        <!-- Buttons Container -->
+        <div class="btn-area">
+            <button id="yesBtn" onclick="acceptForgiveness()" class="btn-yes">
+                Иә, кешірдім! ✨
+            </button>
+
+            <button id="noBtn" class="btn-no">
+                Жоқ 🙈
+            </button>
+        </div>
+    </main>
+
+    <!-- Success Celebration Modal Popup (Hidden by default) -->
+    <div id="successModal" class="modal-overlay">
+        <div class="modal-card" id="modalCard">
+            <div class="modal-heart-icon">💖</div>
+            <h2 class="modal-title">РАҚМЕТ, ЖАНЫМ! 💖</h2>
+            <p class="modal-desc">
+                Кешірімің үшін мың да бір рақмет! 🌹✨
+            </p>
+            <button onclick="closeModal()" class="modal-btn">
+                Жүрегіме құшақтау 🤗
+            </button>
+        </div>
+    </div>
+
+    <script>
+        /* -------------------------------------------------------------
+           1. Offline Floating Canvas Particle Heart Engine
+           ------------------------------------------------------------- */
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let fireworks = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class HeartParticle {
+            constructor(x, y) {
+                this.x = x || Math.random() * canvas.width;
+                this.y = y || canvas.height + Math.random() * 40;
+                this.size = Math.random() * 10 + 6;
+                this.speedY = Math.random() * 1.2 + 0.4;
+                this.speedX = Math.sin(Math.random() * Math.PI) * 0.5;
+                this.opacity = Math.random() * 0.6 + 0.2;
+                this.color = `hsl(${Math.random() * 30 + 330}, 90%, 65%)`;
+                this.rotation = Math.random() * Math.PI;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                ctx.globalAlpha = this.opacity;
+                ctx.fillStyle = this.color;
+                
+                ctx.beginPath();
+                const h = this.size * 0.3;
+                ctx.moveTo(0, h);
+                ctx.bezierCurveTo(0, 0, -this.size / 2, 0, -this.size / 2, h);
+                ctx.bezierCurveTo(-this.size / 2, (this.size + h) / 2, 0, this.size, 0, this.size);
+                ctx.bezierCurveTo(0, this.size, this.size / 2, (this.size + h) / 2, this.size / 2, h);
+                ctx.bezierCurveTo(this.size / 2, 0, 0, 0, 0, h);
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            }
+
+            update() {
+                this.y -= this.speedY;
+                this.x += this.speedX;
+
+                if (this.y < -30) {
+                    this.y = canvas.height + 30;
+                    this.x = Math.random() * canvas.width;
+                }
+            }
+        }
+
+        // Firework Burst Particles on Success
+        class BurstParticle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 6 + 2;
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                this.size = Math.random() * 8 + 4;
+                this.alpha = 1;
+                this.decay = Math.random() * 0.02 + 0.015;
+                this.color = `hsl(${Math.random() * 50 + 320}, 100%, 65%)`;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += 0.08; // Gravity
+                this.alpha -= this.decay;
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            const count = Math.min(Math.floor(window.innerWidth / 22), 25);
+            for (let i = 0; i < count; i++) {
+                particles.push(new HeartParticle());
+            }
+        }
+        initParticles();
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw floating hearts
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            // Draw fireworks
+            for (let i = fireworks.length - 1; i >= 0; i--) {
+                fireworks[i].update();
+                fireworks[i].draw();
+                if (fireworks[i].alpha <= 0) {
+                    fireworks.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // Spawn hearts on screen touch
+        window.addEventListener('pointerdown', (e) => {
+            for (let i = 0; i < 3; i++) {
+                let p = new HeartParticle(e.clientX, e.clientY);
+                p.speedY = Math.random() * 2.5 + 1;
+                particles.push(p);
+                if (particles.length > 50) particles.shift();
+            }
+        });
+
+        /* -------------------------------------------------------------
+           2. Smart Runaway "No" Button Logic for Touchscreens
+           ------------------------------------------------------------- */
+        const noBtn = document.getElementById('noBtn');
+        const yesBtn = document.getElementById('yesBtn');
+        let dodgeCount = 0;
+
+        const runawayTexts = [
+            "Жоқ 🙈",
+            "Ұстай алмайсың 😜",
+            "Өтінемін 🥺",
+            "Кешіре ғойшы... 💕",
+            "Тек «Иә» басылады 🥰"
+        ];
+
+        function dodgeNoButton(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            dodgeCount++;
+
+            // Slightly enlarge YES button on attempts
+            const currentScale = 1 + Math.min(dodgeCount * 0.06, 0.3);
+            yesBtn.style.transform = `scale(${currentScale})`;
+
+            // Change No button text dynamically
+            const textIndex = Math.min(dodgeCount, runawayTexts.length - 1);
+            noBtn.innerText = runawayTexts[textIndex];
+
+            // Get exact positions to prevent overlap with YES button
+            const yesRect = yesBtn.getBoundingClientRect();
+            const noRect = noBtn.getBoundingClientRect();
+
+            let newX = 0;
+            let newY = 0;
+            let isValidPosition = false;
+
+            // Try to find a safe visible spot that NEVER overlaps yesBtn
+            for (let i = 0; i < 25; i++) {
+                const testX = (Math.random() - 0.5) * Math.min(window.innerWidth * 0.55, 180);
+                // Keep Y mostly downward (+20px to +110px) or wide sideways so it never tucks under YES
+                let testY = Math.random() > 0.35 ? (Math.random() * 85 + 25) : ((Math.random() - 0.5) * 35);
+
+                // Calculate candidate center positions
+                const candidateLeft = noRect.left + testX;
+                const candidateRight = candidateLeft + noRect.width;
+                const candidateTop = noRect.top + testY;
+                const candidateBottom = candidateTop + noRect.height;
+
+                // Check for overlapping with YES button (with a safety margin)
+                const isOverlapping = !(
+                    candidateRight < yesRect.left - 12 ||
+                    candidateLeft > yesRect.right + 12 ||
+                    candidateBottom < yesRect.top - 12 ||
+                    candidateTop > yesRect.bottom + 12
+                );
+
+                // Ensure it stays inside viewport boundaries
+                const isInViewport = (
+                    candidateLeft >= 12 &&
+                    candidateRight <= window.innerWidth - 12 &&
+                    candidateTop >= 20 &&
+                    candidateBottom <= window.innerHeight - 20
+                );
+
+                if (!isOverlapping && isInViewport) {
+                    newX = testX;
+                    newY = testY;
+                    isValidPosition = true;
+                    break;
+                }
+            }
+
+            // Fallback safe position below YES button
+            if (!isValidPosition) {
+                newX = (Math.random() > 0.5 ? 1 : -1) * (window.innerWidth * 0.22);
+                newY = 55 + Math.random() * 35;
+            }
+
+            noBtn.style.transform = `translate(${newX}px, ${newY}px)`;
+        }
+
+        // Attach listeners for touch and pointer
+        ['touchstart', 'pointerdown', 'mouseenter'].forEach(evtName => {
+            noBtn.addEventListener(evtName, dodgeNoButton, { passive: false });
+        });
+
+        /* -------------------------------------------------------------
+           3. Acceptance & Modal Popup
+           ------------------------------------------------------------- */
+        function triggerFireworks() {
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            
+            for (let burst = 0; burst < 4; burst++) {
+                setTimeout(() => {
+                    const fx = centerX + (Math.random() - 0.5) * 200;
+                    const fy = centerY + (Math.random() - 0.5) * 200;
+                    for (let i = 0; i < 40; i++) {
+                        fireworks.push(new BurstParticle(fx, fy));
+                    }
+                }, burst * 300);
+            }
+        }
+
+        function acceptForgiveness() {
+            triggerFireworks();
+
+            // Show Popup Modal
+            const modal = document.getElementById('successModal');
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('successModal');
+            modal.classList.remove('active');
+        }
+
+        // Click hero heart for extra fireworks
+        document.getElementById('heroHeart').addEventListener('click', () => {
+            for (let i = 0; i < 25; i++) {
+                fireworks.push(new BurstParticle(window.innerWidth / 2, window.innerHeight * 0.35));
+            }
+        });
+    </script>
+</body>
+</html>
